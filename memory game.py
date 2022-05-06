@@ -4,6 +4,12 @@ from random import *
 
 # 레벨에 맞게 설정
 def setup(level):
+    global display_time
+    
+    # 얼마동안 숫자를 보여줄 것인가?
+    display_time = 5 - (level // 3)
+    display_time = max(display_time, 1)
+    
     # 얼마나 많은 숫자를 보여줄 것인가?
     number_cnt = (level // 3) + 5
     number_cnt = min(number_cnt, 20)
@@ -54,6 +60,13 @@ def display_start_screen():
 
 # 게임 화면 보여주는 함수
 def display_game_screen():
+    global hidden
+    
+    if not hidden:
+        elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000 # ms -> sec
+        if elapsed_time > display_time:
+            hidden = True
+    
     for idx, rect in enumerate(number_buttons, start=1):
         if hidden:
             # 버튼 사각형 그리기
@@ -68,7 +81,7 @@ def display_game_screen():
 # position에 해당하는 버튼 확인
 def check_buttons(position):
     # 전역 변수로 사용하기 위함
-    global start
+    global start, start_ticks
     
     # 게임이 시작했다면
     if start:
@@ -76,6 +89,7 @@ def check_buttons(position):
         
     # start 버튼에 position이 포함되면
     elif start_button.collidepoint(position):
+        start_ticks = pygame.time.get_ticks() # 타이머 시작 (현재 시간을 저장)
         start = True
     
 def check_number_buttons(position):
@@ -108,12 +122,13 @@ start_button = pygame.Rect(0, 0, 120, 120)          # 사각형의 크기가 120
 start_button.center = (120, screen_height - 120)    # 사각형 중심좌표 설정
 
 # 색상
-BLACK = (0, 0, 0) # RGC
+BLACK = (0, 0, 0) # RGB
 WHITE = (255, 255, 255)
 GRAY = (50, 50, 50)
 
-# 플레이어가 눌러야 하는 버튼을 관리하는 리스트
-number_buttons = [] 
+number_buttons = []     # 플레이어가 눌러야 하는 버튼을 관리하는 리스트
+display_time = None     # 숫자를 보여주는 시간
+start_ticks = None      # 시간 계산 (현재 시간 정보를 저장)
 
 start = False   # 게임 시작 여부 
 hidden = False  # 숫자 숨김 여부(사용자가 1을 클릭하거나, 일정 시간이 지났을 때)
