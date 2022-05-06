@@ -1,3 +1,4 @@
+from asyncio import format_helpers
 import pygame
 from random import *
 
@@ -54,13 +55,14 @@ def display_start_screen():
 # 게임 화면 보여주는 함수
 def display_game_screen():
     for idx, rect in enumerate(number_buttons, start=1):
-        pygame.draw.rect(screen, GRAY, rect)
-        
-        # 실제 숫자 텍스트
-        cell_text = game_font.render(str(idx), True, WHITE)
-        text_rect = cell_text.get_rect(center = rect.center)
-        screen.blit(cell_text, text_rect)
-        
+        if hidden:
+            # 버튼 사각형 그리기
+            pygame.draw.rect(screen, WHITE, rect)
+        else:        
+            # 실제 숫자 텍스트
+            cell_text = game_font.render(str(idx), True, WHITE)
+            text_rect = cell_text.get_rect(center = rect.center)
+            screen.blit(cell_text, text_rect)
         
 
 # position에 해당하는 버튼 확인
@@ -68,9 +70,30 @@ def check_buttons(position):
     # 전역 변수로 사용하기 위함
     global start
     
+    # 게임이 시작했다면
+    if start:
+        check_number_buttons(position)
+        
     # start 버튼에 position이 포함되면
-    if start_button.collidepoint(position):
+    elif start_button.collidepoint(position):
         start = True
+    
+def check_number_buttons(position):
+    global hidden
+    
+    for button in number_buttons:
+        # 클릭한 위치가 버튼에 포함되면
+        if button.collidepoint(position):
+            # 첫 번째 숫자가 맞다면
+            if button == number_buttons[0]:
+                print("correct")
+                del number_buttons[0]   # 리스트에서 첫 번째 숫자 삭제
+                
+                if not hidden:
+                    hidden = True  # 숫자 숨김 처리
+            # 잘못된 숫자 클릭 시
+            else:
+                print("wrong")
     
 # 초기화
 pygame.init()
@@ -92,8 +115,8 @@ GRAY = (50, 50, 50)
 # 플레이어가 눌러야 하는 버튼을 관리하는 리스트
 number_buttons = [] 
 
-# 게임 시작 여부 
-start = False
+start = False   # 게임 시작 여부 
+hidden = False  # 숫자 숨김 여부(사용자가 1을 클릭하거나, 일정 시간이 지났을 때)
 
 # 게임 시작 전에 게임 설정 함수 수행
 setup(1)
